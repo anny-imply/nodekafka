@@ -17,43 +17,23 @@ const kafka = new Kafka({
 const producer = kafka.producer({
   createPartitioner: Partitioners.LegacyPartitioner,
 });
-const TOPIC = "quickstart-events";
+const TOPIC = "new-events";
 const sendToProducer = async (json) => {
   await producer.connect();
   await producer.send({
     topic: TOPIC,
-    messages: json,
+    messages: [json],
   });
 
   await producer.disconnect();
 };
 
-const waitForConsumer = async () => {
-  const consumer = kafka.consumer({ groupId: "test-group" });
-
-  await consumer.connect();
-  await consumer.subscribe({ topic: TOPIC, fromBeginning: true });
-
-  await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-      console.log({
-        value: message.value.toString(),
-      });
-    },
-  });
-};
-waitForConsumer();
-
 app.post("/event", function (req, res) {
   res.statusCode = 200;
-  // json
   const { body } = req;
-  const arr = Object.keys(body).map((k) => {
-    return { key: k, value: body[k] };
-  });
-  console.log(arr);
-
-  sendToProducer(arr);
+  const _time = body.time;
+  delete body.time;
+  sendToProducer({ key: _time, value: JSON.stringify(body) });
   res.send({ ...body });
 });
 

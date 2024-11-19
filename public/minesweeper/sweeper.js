@@ -1,6 +1,5 @@
 const postEvent = async (message) => {
   const body = getEventJson(message);
-
   // Fetch options
   const options = {
     method: "POST",
@@ -17,9 +16,21 @@ const postEvent = async (message) => {
   console.log(json);
 };
 
+const getRandomIntInclusive = (min, max) => {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled); // The maximum is inclusive and the minimum is inclusive
+};
+const getGameId = () => {
+  return getRandomIntInclusive(1000, 9000).toString();
+};
+
+let gameId = getGameId();
+
 const getEventJson = (message) => {
   return {
     game: "minesweeper",
+    gameId,
     time: new Date().toISOString(),
     message,
   };
@@ -33,11 +44,7 @@ document.getElementById("again").addEventListener("click", () => {
 const container = document.getElementById("grid");
 const gameOverTextElem = document.getElementById("gameOver");
 const BOMB_INT = 1;
-const getRandomIntInclusive = (min, max) => {
-  const minCeiled = Math.ceil(min);
-  const maxFloored = Math.floor(max);
-  return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled); // The maximum is inclusive and the minimum is inclusive
-};
+
 const getNormalOrBomb = () => getRandomIntInclusive(0, BOMB_INT);
 const showCell = (cell) => {
   cell.classList.remove("covered");
@@ -214,6 +221,7 @@ const endGame = (didWin) => {
 };
 const reset = () => {
   createBoard();
+  gameId = getGameId();
   gameOverTextElem.parentElement.classList.add("hide");
   container.classList.remove("disable");
 };
