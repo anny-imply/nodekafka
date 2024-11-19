@@ -38,7 +38,7 @@ const getEventJson = (message) => {
 document.getElementById("again").addEventListener("click", () => {
   // TODO: send JSON to kafka
   postEvent("play again");
-  reset();
+  window.location.reload();
 });
 
 const container = document.getElementById("grid");
@@ -219,11 +219,5 @@ const endGame = (didWin) => {
     showCell(e);
   }
 };
-const reset = () => {
-  createBoard();
-  gameId = getGameId();
-  gameOverTextElem.parentElement.classList.add("hide");
-  container.classList.remove("disable");
-};
 
-reset();
+createBoard();
