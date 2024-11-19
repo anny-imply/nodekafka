@@ -1,4 +1,10 @@
 const { Kafka, Partitioners } = require("kafkajs");
+const express = require("express");
+const path = require("path");
+
+const app = express();
+app.use(express.static(__dirname + "/public"));
+const port = 3000;
 
 const kafka = new Kafka({
   clientId: "my-app",
@@ -35,3 +41,15 @@ const waitForConsumer = async () => {
   });
 };
 waitForConsumer();
+
+// app.get("/", (req, res) => {
+//   res.send("Hello World!");
+// });
+
+app.get("/", function (req, res) {
+  res.sendFile(path.join(__dirname, "public", "minesweeper", "index.html"));
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
