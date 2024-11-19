@@ -1,4 +1,32 @@
+const postEvent = async (message) => {
+  const body = getEventJson(message);
+
+  // Fetch options
+  const options = {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  const response = await fetch(`/event`, options);
+  const json = await response.json();
+
+  // Use json response
+  console.log(json);
+};
+
+const getEventJson = (message) => {
+  return {
+    game: "minesweeper",
+    time: new Date().toISOString(),
+    message,
+  };
+};
 document.getElementById("again").addEventListener("click", () => {
+  // TODO: send JSON to kafka
+  postEvent("play again");
   reset();
 });
 
@@ -161,6 +189,8 @@ const createBoard = () => {
         grid[rowIndex][colIndex] = updatedNum;
       }
       cellElem.addEventListener("click", (e) => {
+        // TODO: send JSON to kafka
+        postEvent("clicked cell");
         checkCell(e.target);
       });
       cellElem.classList.add("cell");
@@ -173,9 +203,11 @@ const createBoard = () => {
 };
 
 const endGame = (didWin) => {
+  // TODO: send JSON to kafka
   container.classList.add("disable");
   gameOverTextElem.parentElement.classList.remove("hide");
   gameOverTextElem.textContent = didWin ? "YOU WON :)" : "YOU LOST :(";
+  postEvent(didWin ? "win" : "lost");
   for (let e of document.querySelectorAll(".covered")) {
     showCell(e);
   }

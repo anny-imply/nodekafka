@@ -1,8 +1,11 @@
 const { Kafka, Partitioners } = require("kafkajs");
 const express = require("express");
 const path = require("path");
+var bodyParser = require("body-parser");
 
 const app = express();
+app.use(bodyParser.json());
+
 app.use(express.static(__dirname + "/public"));
 const port = 3000;
 
@@ -15,16 +18,15 @@ const producer = kafka.producer({
   createPartitioner: Partitioners.LegacyPartitioner,
 });
 const TOPIC = "quickstart-events";
-const waitForProducer = async () => {
+const sendToProducer = async (json) => {
   await producer.connect();
   await producer.send({
     topic: TOPIC,
-    messages: [{ value: "Hello KafkaJS user!" }],
+    messages: json,
   });
 
   await producer.disconnect();
 };
-waitForProducer();
 
 const waitForConsumer = async () => {
   const consumer = kafka.consumer({ groupId: "test-group" });
@@ -42,9 +44,18 @@ const waitForConsumer = async () => {
 };
 waitForConsumer();
 
-// app.get("/", (req, res) => {
-//   res.send("Hello World!");
-// });
+app.post("/event", function (req, res) {
+  res.statusCode = 200;
+  // json
+  const { body } = req;
+  const arr = Object.keys(body).map((k) => {
+    return { key: k, value: body[k] };
+  });
+  console.log(arr);
+
+  sendToProducer(arr);
+  res.send({ ...body });
+});
 
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "public", "minesweeper", "index.html"));
