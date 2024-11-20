@@ -37,8 +37,17 @@ app.post("/event", function (req, res) {
   res.send({ ...body });
 });
 
-app.get("/", function (req, res) {
-  res.sendFile(path.join(__dirname, "public", "minesweeper", "index.html"));
+app.get("/game", function (_, res) {
+  res.sendFile(path.join(__dirname, "public", "minesweeper", "game.html"));
+});
+
+app.get("/get-events", function (req, res) {
+  console.log(req.query.dataSource);
+  res.send({});
+});
+
+app.get("/graph", function (_, res) {
+  res.sendFile(path.join(__dirname, "public", "graph.html"));
 });
 
 app.listen(port, () => {
