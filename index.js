@@ -14,18 +14,17 @@ app.use(express.static(__dirname + "/public"));
 const port = 3000;
 
 const kafka = new Kafka({
-  clientId: "my-app",
   brokers: ["localhost:9092"],
 });
 
 const producer = kafka.producer({
   createPartitioner: Partitioners.LegacyPartitioner,
 });
-const TOPIC = "new-events";
+const topic = "new-events";
 const sendToProducer = async (json) => {
   await producer.connect();
   await producer.send({
-    topic: TOPIC,
+    topic,
     messages: [json],
   });
 
@@ -52,12 +51,12 @@ const getJSON = (dataSource) => {
 };
 
 app.get("/get-events", async function (req, res) {
+  const { start, end, version } = req.query;
   const response = await fetch("http://localhost:8888/druid/v2", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    // needs string
     body: JSON.stringify({
       queryType: "scan",
       dataSource: "new-events",
@@ -65,8 +64,8 @@ app.get("/get-events", async function (req, res) {
         type: "segments",
         segments: [
           {
-            itvl: "2024-11-19T00:00:00.000Z/2024-11-20T00:00:00.000Z",
-            ver: "2024-11-19T20:49:55.402Z",
+            itvl: `${start}/${end}`, // "2024-11-20T00:00:00.000Z/2024-11-21T00:00:00.000Z",
+            ver: version, //"2024-11-20T19:04:38.425Z",
             part: 1,
           },
         ],
@@ -91,7 +90,6 @@ app.get("/get-segments", async function (req, res) {
     headers: {
       "Content-Type": "application/json",
     },
-    // needs string
     body: JSON.stringify(getJSON(dataSource)),
   });
   const data = await response.json();

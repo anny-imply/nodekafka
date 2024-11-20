@@ -1,13 +1,19 @@
-<input id="data-source" value="new-segments" /><button id="get-segments">
+<input id="data-source" value="new-events" /><button id="get-segments">
   get segments
 </button>
-
+<p id="segments"></p>
 <button id="get-events">get events</button>
 
 <p id="response"></p>
 <script>
+  let segments = [];
+
   document.getElementById("get-events").addEventListener("click", async () => {
-    const response = await fetch(`/get-events`);
+    if (!segments.length) throw new Error("need segments");
+    const { version, start, end } = segments[0];
+    const response = await fetch(
+      `/get-events?start=${start}&end=${end}&version=${version}`
+    );
     const json = await response.json();
 
     document.getElementById("response").textContent = JSON.stringify(json.data);
@@ -19,8 +25,9 @@
       const dataSource = document.getElementById("data-source").value;
       const response = await fetch(`/get-segments?dataSource=${dataSource}`);
       const json = await response.json();
-
-      document.getElementById("response").textContent = JSON.stringify(
+      segments = json.data;
+      console.log("is this latest?", segments[0]);
+      document.getElementById("segments").textContent = JSON.stringify(
         json.data
       );
     });
