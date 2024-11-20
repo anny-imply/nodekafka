@@ -4,7 +4,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import bodyParser from "body-parser";
 import fetch from "node-fetch";
-import { getJSON } from "./utils";
 
 const app = express();
 app.use(bodyParser.json());
@@ -46,7 +45,45 @@ app.get("/game", function (_, res) {
   res.sendFile(path.join(__dirname, "public", "minesweeper", "game.html"));
 });
 
+const getJSON = (dataSource) => {
+  return {
+    query: `WITH s AS (SELECT\n"segment_id",\n"datasource",\n"start",\n"end",\n"version",\n"shard_spec",\n"partition_num",\n"size",\n"num_rows",\nCASE WHEN "num_rows" <> 0 THEN ("size" / "num_rows") ELSE 0 END AS "avg_row_size",\n"num_replicas",\n"replication_factor",\n"is_available",\n"is_active",\n"is_realtime"\nFROM sys.segments)\nSELECT *\nFROM s\nWHERE "datasource" = \'${dataSource}\'\nORDER BY "start" DESC, "version" DESC\nLIMIT 50`,
+  };
+};
+
 app.get("/get-events", async function (req, res) {
+  const response = await fetch("http://localhost:8888/druid/v2", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    // needs string
+    body: JSON.stringify({
+      queryType: "scan",
+      dataSource: "new-events",
+      intervals: {
+        type: "segments",
+        segments: [
+          {
+            itvl: "2024-11-19T00:00:00.000Z/2024-11-20T00:00:00.000Z",
+            ver: "2024-11-19T20:49:55.402Z",
+            part: 1,
+          },
+        ],
+      },
+      resultFormat: "compactedList",
+      limit: 1001,
+      columns: [],
+      granularity: "all",
+      context: { sqlOuterLimit: 100 },
+    }),
+  });
+  const data = await response.json();
+
+  res.send({ data });
+});
+
+app.get("/get-segments", async function (req, res) {
   const { dataSource } = req.query;
   if (!dataSource) throw new Error("Expected dataSource to be defined");
   const response = await fetch("http://localhost:8888/druid/v2/sql", {
@@ -54,6 +91,7 @@ app.get("/get-events", async function (req, res) {
     headers: {
       "Content-Type": "application/json",
     },
+    // needs string
     body: JSON.stringify(getJSON(dataSource)),
   });
   const data = await response.json();

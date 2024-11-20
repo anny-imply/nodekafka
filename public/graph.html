@@ -1,13 +1,27 @@
-<input id="data-source" value="new-events" /><button id="get-events">
-  get events
+<input id="data-source" value="new-segments" /><button id="get-segments">
+  get segments
 </button>
+
+<button id="get-events">get events</button>
+
 <p id="response"></p>
 <script>
   document.getElementById("get-events").addEventListener("click", async () => {
-    const dataSource = document.getElementById("data-source").value;
-    const response = await fetch(`/get-events?dataSource=${dataSource}`);
+    const response = await fetch(`/get-events`);
     const json = await response.json();
 
     document.getElementById("response").textContent = JSON.stringify(json.data);
   });
+
+  document
+    .getElementById("get-segments")
+    .addEventListener("click", async () => {
+      const dataSource = document.getElementById("data-source").value;
+      const response = await fetch(`/get-segments?dataSource=${dataSource}`);
+      const json = await response.json();
+
+      document.getElementById("response").textContent = JSON.stringify(
+        json.data
+      );
+    });
 </script>
