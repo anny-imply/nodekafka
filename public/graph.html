@@ -1,14 +1,13 @@
 <input id="data-source" value="new-events" /><button id="get-events">
   get events
 </button>
+<p id="response"></p>
 <script>
   document.getElementById("get-events").addEventListener("click", async () => {
-    // post to
     const dataSource = document.getElementById("data-source").value;
     const response = await fetch(`/get-events?dataSource=${dataSource}`);
     const json = await response.json();
 
-    // Use json response
-    console.log(json);
+    document.getElementById("response").textContent = JSON.stringify(json.data);
   });
 </script>

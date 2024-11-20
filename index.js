@@ -1,10 +1,15 @@
-const { Kafka, Partitioners } = require("kafkajs");
-const express = require("express");
-const path = require("path");
-var bodyParser = require("body-parser");
+import { Kafka, Partitioners } from "kafkajs";
+import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import bodyParser from "body-parser";
+import fetch from "node-fetch";
+import { getJSON } from "./utils";
 
 const app = express();
 app.use(bodyParser.json());
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 
 app.use(express.static(__dirname + "/public"));
 const port = 3000;
@@ -41,9 +46,19 @@ app.get("/game", function (_, res) {
   res.sendFile(path.join(__dirname, "public", "minesweeper", "game.html"));
 });
 
-app.get("/get-events", function (req, res) {
-  console.log(req.query.dataSource);
-  res.send({});
+app.get("/get-events", async function (req, res) {
+  const { dataSource } = req.query;
+  if (!dataSource) throw new Error("Expected dataSource to be defined");
+  const response = await fetch("http://localhost:8888/druid/v2/sql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(getJSON(dataSource)),
+  });
+  const data = await response.json();
+
+  res.send({ data });
 });
 
 app.get("/graph", function (_, res) {

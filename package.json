@@ -2,6 +2,7 @@
   "name": "nodekafka",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.1",
-    "kafkajs": "^2.2.4"
+    "kafkajs": "^2.2.4",
+    "node-fetch": "^3.3.2"
   }
 }
